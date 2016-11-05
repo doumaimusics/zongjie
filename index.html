@@ -1,0 +1,373 @@
+﻿1、流量器兼容问题
+   
+   （1）经典的bug   padding  margin   
+    
+        解决办法*{
+                  padding:0;
+                  margin:0;
+                 } 
+
+   （2）块元素设置float后，又有横向的margin的情况下，在IE6显示margin比设置的大
+
+       解决的办法  在float的标签样式中加一个 display:inline;将其转化为行内属性；
+
+
+   （3）设置较小高度标签（一般小于10px），在IE6 IE7，会超出自己所设定的高度
+
+       解决的办法：给超出高度的标签设置overflow:hidden;或设置行高liline:height小于你设置的高度
+
+   （4）行内属性标签，在设置display:block后采用float布局，在设置margin的情况，IE6的间距会超出所设置的间距
+
+       解决的办法：在display:block后面加display：inline;display:table;
+  
+    (5)几个img标签放在一起时，有些浏览器会有默认的间距。
+     
+        解决的办法：用float属性设置img布局
+
+    （6）在设置最低高度min-height
+
+         min-height:200px;height:auto !important;height:200px;overflow:visible;
+
+     (7)当float元素和position元素是并列关系时，绝对定位元素 会消失掉
+    
+        解决的办法  给定位元素包一层div  取消并列关系
+
+    （8）img标签底部有间隙2px 4px的间隙问题  不同font-size会影响这个间隙的大小
+
+         解决的办法： 将图片转化为块元素  display:block;
+
+                     将包含img图片的父容器的字体大小设为零   font-size:0；
+     
+    （9）margin使用时上下边距会出现合并的情况
+ 
+        解决的办法：只给一个容器调整外边距就可以，不要俩个同时给
+
+    （10）给子元素设置margin-top:20px；但是没有看到想要的效果
+  
+         解决的办法：给父元素一个透明的边框  border:1px solid rgba(0,0,0,0)         
+
+     （11）ie  z-index问题  给父元素加position：relative;
+        
+
+
+2、this指向    call  apply  var that=this(aa)
+
+   this谁调用就指向谁  当没有明确执行的对象时，this指向window
+
+   this作为函数调用时  this绑定到全局对象；作为方法调用时，this绑定到该方法所属的对象
+   
+   apply()的参数为空时  默认调用的是全局对象 this指向也是全局对象
+
+   call()调用一个对象的一个方法，以另一个对象替换当前对象。
+
+
+3、em rem 区别
+  
+   em   当不设置字体大小时 默认为  1em=16px 12px=0.75em 10px=0.625em 
+
+        em会继承父级元素的字体大小
+
+   rem  相对元html根元素的
+
+4、闭包
+
+   函数里嵌套函数时，内部的函数可以访问外部的变量
+
+   闭包就是能够读取其他函数内部变量的函数，这些变量也会始终保持在内存中。
+   
+   因为javascript的特性，函数的封闭性，为了访问到函数内部的变量。所以产生的闭包。
+
+5、（1）ajax两次请求怎么处理   
+  
+     setInter时间函数  要有时间间隔
+
+   （2）请求步骤
+     
+     开始的时候 发送ajax请求
+     $(document).ajaxStart(function () {
+        $('.ceshi').addClass('active').width($(window).width()*0.8)
+     })
+  
+     成功时
+     $(document).ajaxSuccess(function () {
+          $('.ceshi').width($(window).width());
+     })
+    
+     错误时
+         $(document).ajaxError(function () {
+         $('.ceshi').width(0).removeClass('active');
+     })
+
+     完成时
+      $(document).ajaxComplete(function () {
+            $('.ceshi').delay(800).queue(function () {
+                $(this).removeClass('active').width(0).dequeue();
+            })
+      })
+
+     （增删改查）；
+      
+      获取回来数据 显示在页面
+      $.get('/getalluser')
+        .done(function (data) {
+            for(var i=0;i<data.length;i++){
+                var v=data[i];
+                $('<tr data-id="'+v.uid+'"><th scope="row"><div class="btn">'+v.uid+'</div>
+                   </th><td><input type="email" class="form-control name" value="'+v.unane+'">
+                   </td> <td><input type="email" class="form-control phone" value="'+v.phone+'">
+                   </td> <td><div class="btn btn-danger delete">x</div></td></tr>').prependTo('tbody');
+            } 
+        })
+
+      删除数据
+      $('tbody').on('click','.delete',function () {
+        var uid=$(this).closest('tr').attr('data-id');
+        var that=this;
+        $.get('/deleteuserbyid',{x:uid})
+            .done(function (data) {
+                if(data){
+                    $(that).closest('tr').remove();
+                }
+            })
+       })
+      点击添加
+        $('.plus').on('click',function () {
+        $.get('/adduser').done(function (uid) {
+            $('<tr data-id="'+uid+'"><th scope="row"><div class="btn">'+uid+'</div></th><td><input type="email" class="form-control name" value=""></td> <td><input type="email" class="form-control phone" value=""></td> <td><div class="btn btn-danger delete">x</div></td></tr>').prependTo('tbody').find('input').eq(1).val(13).focus();
+        })
+        })
+      修改
+       $('tbody').on('keyup','.name,.phone',function () {
+        var tr=$(this).closest('tr');
+        var uid=tr.attr('data-id');
+        var unane=tr.find('.name').val().trim();
+        var phone=tr.find('.phone').val().trim();
+        $.get('/updateuserbyid',{uid:uid,unane:unane,phone:phone});
+         })
+        })
+
+       （4）$.get 字符串
+            $.getJson  转化数值
+            $.getScript('/test.js')执行一段脚步文件
+            $.post 发送数据比$.get更安全
+            .done(function(data){....})成功时
+            .fail(function(){.....})失败时
+            dataType:'jsonp'跨域请求
+       （5）jsonp 如果获取数据的文件存放在远程的服务器上（域名不同，也是跨域获取数据）
+       （6）data=JSON.parse(data); 方法将一个 字符串解析成一个 JSON 对象
+       （7）什么是json对象
+            Json字符串就是字符串 ，只不过字符串的内容格式是json格式的
+            json对象是json格式的对象  就是键对值 键（strong/number）值（strong/number/Array）
+             var obj={name：”name“，age:10}这个中非常相似
+
+6、json数据处理方法
+    json数据是一种实时数据交互的数据存储方法，使用最多的是ajax和json配合使用
+    json字符串  Var strJSON = “{“Area”：[{“AreaId”:”123”},{“AreaId”:”345”}]}”，双引号
+    json对象    Var JSON = {“Area”：[{“AreaId”:”123”},{“AreaId”:”345”}]},      没有引号
+
+7、做项目的优点
+    
+8、响应  移动端
+
+    移动端
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    @mixin userem($size) {
+    $list: 768px, 435px, 414px,385px, 375px, 360, 320px;
+    @each $i in $list{
+    @media screen and(max-width: #{$i}){
+      html{
+        font-size: 100px * ($i/$size);
+      }
+    }
+  }
+}
+
+    响应式
+   $number:12;
+   $l:3000px;
+   $m:980px;
+   $s:650px;
+   $list:(
+        'l':$l,
+        'm':$m,
+        's':$s,
+   );
+  @each $k in map_keys($list){
+  @media screen and(max-width:map_get($list,$k)) {
+    @for $i from 1 through $number{
+      .col .#{$k}#{$i}{
+        width: percentage($i/$number);
+      }
+    }
+   }
+  }
+  .row::after{
+  content: "";
+  clear: both;
+  height: 0;
+  line-height: 0;
+  display: block;
+  }
+  .row{
+  position:relative;
+  .col{
+    float: left;
+  }
+  }
+  @include userem(640px);
+9、插件的原理
+   
+   +function($){
+       $.fn.x=function(x){
+            $(this).css({
+                transform:'translate3d('+x+'px,0,0)'
+            })
+            return this;
+        }
+        $.fn.y=function(y){
+            $(this).css({
+                transform:'translate3d(0,'+y+'px,0)'
+            })
+            return this;
+        }
+        $.fn.t=function(t){
+           var t=t/1000;
+            $(this).css({
+                transition:'all '+t+'s  ease'
+        })
+            return this;
+        }
+        $.fn.c=function(t){
+            $(this)
+                .delay(t)
+                .queue(function(){
+                    $(this).css({
+                        transition:'none'
+                    }).dequeue();
+                })
+            return this;
+        }
+        $.fn.slide=function(op){
+        option={
+            w:$(document).width(),
+            loop:'false',
+            duration:'6'
+        }
+        $.extend(option,op);
+        var dw=option.w;
+        var inner= $(this).find('ul');
+        inner.width(inner.children().length * dw);
+        inner.children().width( dw );
+        var o ;
+        var index=0;
+        inner.on('touchstart',function(ev){
+            $(this).css({
+                transition:'none'
+            })
+            o=ev.originalEvent.changedTouches[0].clientX;
+        })
+        inner.on('touchmove',function(ev){
+            var x=ev.originalEvent.changedTouches[0].clientX;
+            $(this).x( -dw *index + (x-o));
+        })
+        inner.on('touchend',function(ev){
+            var x=ev.originalEvent.changedTouches[0].clientX;
+            if(Math.abs (x-o)>dw/5){
+                if(x < o){
+                    index+=1;
+                    if(index===inner.children().length){
+                        index-=1;
+                    }
+                }else {
+                    index-=1;
+                    if(index===-1){
+                        index=0
+                    }
+                }
+                $(this).t(600).x( -dw*index).c(600);
+            }else {
+                $(this).t(600).x( -dw*index).c(600);
+            }
+        })
+    }
+  }(jQuery)
+10、三个script如何选择加载
+
+   第一种就是利用ajax方式，把script文件代码从后台加载到前台，然后对加载到的内容通过eval()执行代码。
+
+   第二种是，动态创建一个script标签，设置其src属性，通过把script标签插入到页面head来加载js，
+            相当于在head中写了一个<script src="..."></script>,只不过这个script标签是用js动态创建的 
+   var head= document.getElementsByTagName('head')[0]; 
+   var script= document.createElement('script'); 
+   script.type= 'text/javascript'; 
+   script.src= 'call.js'; 
+   head.appendChild(script);   
+
+11、H5
+    canvas localStrage sessionStrage  audio video 
+
+12、语义化  SEO
+   
+    直观的认识标签，对于搜索引擎优化的抓取有好处
+    用正确的标签做正确的事情，让页面的内容结构化，
+    便于对浏览器，搜索引擎解析，在没有css样式的情况下
+    已文档的格式显示。搜索引擎爬虫依赖标记来
+    确定上下文和各个关键字的权重，利于SEO。便于阅读维护
+
+
+    SEO： 是指在了解搜索引擎自然排名机制的基础上， 对网站进行内部及外
+    部的调整优化， 改进网站在搜索引擎中的关键词自然排名， 获得更多流量，
+    从而达成网站销售及品牌建设的目标。 
+
+
+13、委托事件
+    e.target  事件冒泡原理
+  
+    目前jQuery封装的非常好了 $('父元素').on(click,'.子元素'，function（）{})
+
+
+14、初始数据类型    引用数据类型
+   
+    初始数据类型: null number undfined string boolean
+
+    引用数据类型：function Object array
+
+15、sass
+    css预处理器，为css添加了一些编程的特性（变量、宏、循环、引入外部文件），将css作为目标生成文件。
+     引入外部自配置文件
+     建立base.scss文件    在scss中引入该样式 @import "base";  
+
+16、Roflow的概念   （$(n).get(0).offsetWidth;会强制重绘）
+    
+   选出DOM元素.get(0).offsetWidth强制重绘
+    
+17、addEventListener  和 on（鼠标事件）的区别
+      addEventListener绑定多个事件不会覆盖
+      on后面的事件会覆盖前一个事件
+    addEventListenert方法（事件名，函数，true/false），
+    如果为true代表捕获阶段处理,如果是false代表冒泡阶段处理
+
+    冒泡型事件(所有的浏览器都支持)
+    由明确的事件源到最不确定的事件源依次向上触发。
+    2.捕获型事件(IE不支持 w3c标准 火狐)
+    不确定的事件源到明确的事件源一次向下触发。
+
+
+18、作用域
+    作用域:指的就是一段代码的作用范围。
+    全局变量  在页面中任何地方都能够访问得到的变量，拥有全局的作用域。
+    局部变量  只能在固定的代码片段(函数片段中)中访问到
+19、angule.js
+20、get post区别
+21、http和https区别
+22、node.js
+23、原型链
+24、变形和动画（gpu渲染）
+25、如何优化代码
+26、link   和 @import 的区别
+27、浏览器如何解析html文件
+    .1、解析HTML以构建DOM树：渲染引擎开始解析HTML文档，转换树中的html标签或js生成的标签到DOM节点，它被称为 -- 内容树。
+    .2、构建渲染树：解析CSS（包括外部CSS文件和样式元素以及js生成的样式），根据CSS选择器计算出节点的样式，
+        创建另一个树 —- 渲染树。
+    .3、布局渲染树: 从根节点递归调用，计算每一个元素的大小、位置等，给每个节点所应该出现在屏幕上的精确坐标。
+    .4、绘制渲染树: 遍历渲染树，每个节点将使用UI后端层来绘制。
